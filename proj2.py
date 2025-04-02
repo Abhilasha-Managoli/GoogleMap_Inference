@@ -38,6 +38,7 @@ def get_location_label(lat, lon):
         return "API Error"
 
 
+# Use of AI (ChatGPT) to incorporate DBSCAN in identifying significant locations that were stayed for a long time
 def process_user(file_path, user_label):
     print(f"\n Processing {user_label} from {file_path}")
     df = pd.read_csv(file_path, index_col=False)
@@ -48,7 +49,8 @@ def process_user(file_path, user_label):
     kms_per_radian = 6371.0088
     epsilon = RADIUS_METERS / 1000.0 / kms_per_radian
 
-    db = DBSCAN(eps=epsilon, min_samples=MIN_SAMPLES, algorithm='ball_tree', metric='haversine').fit(np.radians(coordinatess))
+    db = DBSCAN(eps=epsilon, min_samples=MIN_SAMPLES, algorithm='ball_tree', metric='haversine').fit(
+        np.radians(coordinatess))
     df['cluster'] = db.labels_
 
     clusters = df[df['cluster'] != -1].groupby('cluster')[['latitude', 'longitude']].mean().reset_index()
@@ -69,6 +71,7 @@ def process_user(file_path, user_label):
 df_a, clusters_a, counts_a = process_user("gps_u07.csv", "User A")
 df_b, clusters_b, counts_b = process_user("gps_u08.csv", "User B")
 
+# Use of AI (ChatGPT) to incorporate Folium in creating an interactive map
 combined_latitude = pd.concat([df_a['latitude'], df_b['latitude']]).mean()
 combined_longitude = pd.concat([df_a['longitude'], df_b['longitude']]).mean()
 m = folium.Map(location=[combined_latitude, combined_longitude], zoom_start=15)
@@ -80,7 +83,6 @@ for _, row in clusters_a.iterrows():
         icon=folium.Icon(color='blue')
     ).add_to(m)
 
-# Add User B markers (green)
 for _, row in clusters_b.iterrows():
     folium.Marker(
         [row['latitude'], row['longitude']],
